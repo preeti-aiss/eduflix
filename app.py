@@ -60,7 +60,7 @@ if st.sidebar.button("Reset Student Assessment"):
     st.session_state.quiz_done = False
     st.rerun()
 
-col1, col2 = st.columns()
+col1, col2 = st.columns(2)
 
 with col1:
     st.header("🧪 Level Evaluator")
