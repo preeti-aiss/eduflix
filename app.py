@@ -45,7 +45,7 @@ def fetch_syllabus_row(topic_selected, student_tier):
         df = pd.read_csv(csv_file)
         match = df[(df['topic'] == topic_selected) & (df['difficulty'] == student_tier)]
         if not match.empty:
-            return match.iloc.to_dict()
+            return match.iloc[0].to_dict()
     return {"core_concept": "General Concepts", "expected_marks": "Variable"}
 
 if 'score' not in st.session_state: st.session_state.score = 0
