@@ -1,4 +1,4 @@
-topic,difficulty,core_concept,expected_marks
+topic,difficulty,concept,expected_marks
 Python Functions,Beginner,Function Definition & Positional Arguments,3
 Python Functions,Intermediate,Scope of Variables (Global vs Local),4
 Python Functions,Advanced,Mutable vs Immutable Default Parameters,5
