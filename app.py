@@ -90,17 +90,17 @@ with col1:
     # Logic to upgrade level based on score
     if st.session_state.score >= 20 and st.session_state.level == "Beginner":
         st.session_state.level = "Advanced"
-        st.info("🎉 You've been promoted to the Advanced level!")
+        st.info("You've been promoted to the Advanced level!")
 
 with col2:
-    st.header("📚 Generated AI Learning Materials")
+    st.header(" Generated AI Learning Materials")
     
     # Fetch data
     metadata = fetch_syllabus_row(st.session_state.selected_topic, st.session_state.level)
     
-    st.warning(f"📖 **Topic:** {st.session_state.selected_topic} | **Tier:** {st.session_state.level}")
+    st.warning(f" **Topic:** {st.session_state.selected_topic} | **Tier:** {st.session_state.level}")
     
-    if st.button("✨ Generate AI Curriculum Material", type="primary"):
+    if st.button(" Generate AI Curriculum Material", type="primary"):
         with st.spinner("AI Teacher is generating custom notes..."):
             ai_output = generate_ai_content(
                 st.session_state.selected_topic, 
