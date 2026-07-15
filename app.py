@@ -47,13 +47,11 @@ def fetch_syllabus_row(topic_selected, student_tier):
         return {"core_concept": "File not found", "expected_marks": "N/A"}
         
     df = pd.read_csv(csv_file)
-    # Ensure columns exist to prevent KeyError
     if 'topic' not in df.columns or 'difficulty' not in df.columns:
         return {"core_concept": "Invalid CSV structure", "expected_marks": "N/A"}
 
     match = df[(df['topic'] == topic_selected) & (df['difficulty'] == student_tier)]
     if not match.empty:
-        # Access the first row safely and convert to dict
         return match.iloc[0].to_dict()
     
     return {"core_concept": "General Concepts", "expected_marks": "Variable"}
@@ -73,9 +71,26 @@ st.session_state.selected_topic = selected_topic
 col1, col2 = st.columns(2)
 
 with col1:
-    st.header("Student Assessment")
-    st.write(f"Current Level: {st.session_state.level}")
-    st.write(f"Topic: {st.session_state.selected_topic}")
+    st.header("📝 Student Assessment")
+    st.write(f"**Current Level:** {st.session_state.level}")
+    st.write(f"**Current Score:** {st.session_state.score}")
+    
+    # Simple Quiz Implementation
+    with st.form("assessment_form"):
+        answer = st.radio(f"Quick check: Is '{st.session_state.selected_topic}' an important topic?", ["Yes", "No"])
+        submitted = st.form_submit_button("Submit Answer")
+        
+        if submitted:
+            if answer == "Yes":
+                st.session_state.score += 10
+                st.success("Correct! Score updated.")
+            else:
+                st.error("Incorrect. Try again!")
+    
+    # Logic to upgrade level based on score
+    if st.session_state.score >= 20 and st.session_state.level == "Beginner":
+        st.session_state.level = "Advanced"
+        st.info("🎉 You've been promoted to the Advanced level!")
 
 with col2:
     st.header("📚 Generated AI Learning Materials")
