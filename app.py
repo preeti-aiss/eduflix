@@ -16,8 +16,9 @@ api_key = st.sidebar.text_input("Enter Gemini API Key:", type="password")
 if 'score' not in st.session_state: st.session_state.score = 0
 if 'level' not in st.session_state: st.session_state.level = "Beginner"
 if 'quiz_done' not in st.session_state: st.session_state.quiz_done = False
-# Ensure selected_topic is initialized
-if 'selected_topic' not in st.session_state: st.session_state.selected_topic = "Data Structures" 
+if 'selected_topic' not in st.session_state: st.session_state.selected_topic = "Data Structures"
+
+# --- Helper Functions ---
 
 def generate_ai_content(topic, difficulty, concept, marks):
     if not api_key:
@@ -29,6 +30,7 @@ def generate_ai_content(topic, difficulty, concept, marks):
         You are an expert Computer Science teacher for Class XII.
         Generate a targeted revision resource for the '{difficulty}' level.
         Topic: {topic} | Concept: {concept} | Marks: {marks}
+        
         Format as:
         ### 💡 Dynamic Concept Notes
         ### 💻 Executable Model Code Template
@@ -41,12 +43,19 @@ def generate_ai_content(topic, difficulty, concept, marks):
 
 def fetch_syllabus_row(topic_selected, student_tier):
     csv_file = "cs_syllabus.csv"
-    if os.path.exists(csv_file):
-        df = pd.read_csv(csv_file)
-        match = df[(df['topic'] == topic_selected) & (df['difficulty'] == student_tier)]
-        if not match.empty:
-            # Corrected: Using .iloc[0] to get the first matching row, then .to_dict()
-            return match.iloc[0].to_dict()
+    if not os.path.exists(csv_file):
+        return {"core_concept": "File not found", "expected_marks": "N/A"}
+        
+    df = pd.read_csv(csv_file)
+    # Ensure columns exist to prevent KeyError
+    if 'topic' not in df.columns or 'difficulty' not in df.columns:
+        return {"core_concept": "Invalid CSV structure", "expected_marks": "N/A"}
+
+    match = df[(df['topic'] == topic_selected) & (df['difficulty'] == student_tier)]
+    if not match.empty:
+        # Access the first row safely and convert to dict
+        return match.iloc[0].to_dict()
+    
     return {"core_concept": "General Concepts", "expected_marks": "Variable"}
 
 # --- UI Logic ---
@@ -56,17 +65,24 @@ if st.sidebar.button("Reset Student Assessment"):
     st.session_state.quiz_done = False
     st.rerun()
 
-# --- Columns Defined HERE before being referenced ---
+# Select topic
+selected_topic = st.sidebar.selectbox("Select Topic", ["Data Structures", "Networking"])
+st.session_state.selected_topic = selected_topic
+
+# Columns Defined BEFORE being referenced
 col1, col2 = st.columns(2)
 
 with col1:
     st.header("Student Assessment")
     st.write(f"Current Level: {st.session_state.level}")
-    # Add your assessment logic here
+    st.write(f"Topic: {st.session_state.selected_topic}")
 
 with col2:
     st.header("📚 Generated AI Learning Materials")
+    
+    # Fetch data
     metadata = fetch_syllabus_row(st.session_state.selected_topic, st.session_state.level)
+    
     st.warning(f"📖 **Topic:** {st.session_state.selected_topic} | **Tier:** {st.session_state.level}")
     
     if st.button("✨ Generate AI Curriculum Material", type="primary"):
@@ -74,8 +90,8 @@ with col2:
             ai_output = generate_ai_content(
                 st.session_state.selected_topic, 
                 st.session_state.level, 
-                metadata['core_concept'], 
-                metadata['expected_marks']
+                metadata.get('core_concept', 'N/A'), 
+                metadata.get('expected_marks', 'N/A')
             )
             if "❌" in ai_output or "⚠️" in ai_output:
                 st.error(ai_output)
