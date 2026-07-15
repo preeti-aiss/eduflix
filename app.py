@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from google import genai
+from openai import OpenAI  # Changed from google import genai
 import os
 
 # Set page configuration
@@ -10,15 +10,16 @@ st.markdown("**Professional Development Program (PDP) Demonstration** | *Class X
 
 # API Configuration
 st.sidebar.header("🔑 API Configurations")
-api_key = st.sidebar.text_input("Enter Gemini API Key:", type="password")
+api_key = st.sidebar.text_input("Enter OpenAI API Key:", type="password")
 
 def generate_ai_content(topic, difficulty, concept, marks):
     if not api_key:
-        return "⚠️ Please enter a valid Gemini API Key in the sidebar to generate AI content."
+        return "⚠️ Please enter a valid OpenAI API Key in the sidebar."
     try:
-        # Initializing the client
-        client = genai.Client(api_key=api_key)
-        prompt_template = f"""
+        # Initialize OpenAI Client
+        client = OpenAI(api_key=api_key)
+        
+        prompt_content = f"""
         You are an expert Computer Science teacher for CBSE/ISC Class XII (Subject Code 083).
         Generate a highly targeted revision resource for a student evaluated at the '{difficulty}' level.
         
@@ -33,14 +34,15 @@ def generate_ai_content(topic, difficulty, concept, marks):
         
         ### 🎯 Handcrafted Practical Challenge
         """
-        # Using the stable model identifier to prevent 503/404 errors
-        response = client.models.generate_content(
-            model='gemini-1.5-flash',
-            contents=prompt_template,
+        
+        # Calling OpenAI's stable gpt-4o-mini model
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt_content}]
         )
-        return response.text
+        return response.choices[0].message.content
+        
     except Exception as e:
-        # Return a custom string so the UI can handle the error gracefully
         return f"ERROR_OCCURRED: {str(e)}"
 
 def fetch_syllabus_row(topic_selected, student_tier):
@@ -52,12 +54,11 @@ def fetch_syllabus_row(topic_selected, student_tier):
             return match.iloc[0].to_dict()
     return {"core_concept": "General Concepts", "expected_marks": "Variable"}
 
-# Initialize session state for the assessment flow
+# Initialize session state
 if 'score' not in st.session_state: st.session_state.score = 0
 if 'level' not in st.session_state: st.session_state.level = "Beginner"
 if 'quiz_done' not in st.session_state: st.session_state.quiz_done = False
 
-# Sidebar Selection
 selected_topic = st.sidebar.selectbox("Choose Syllabus Domain:", ["Python Functions", "File Handling", "SQL Databases"])
 
 if st.sidebar.button("Reset Student Assessment"):
@@ -102,9 +103,8 @@ with col2:
         with st.spinner("AI Teacher is generating custom notes..."):
             ai_output = generate_ai_content(selected_topic, st.session_state.level, metadata['core_concept'], metadata['expected_marks'])
             
-            # Robust UI error handling
             if "ERROR_OCCURRED" in ai_output:
-                st.error("The AI service is currently busy or experiencing high demand. Please wait a few seconds and try again.")
+                st.error("The AI service is currently experiencing high demand. Please try again.")
                 with st.expander("Technical Details"):
                     st.code(ai_output)
             else:
