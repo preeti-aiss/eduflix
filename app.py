@@ -3,6 +3,7 @@ import pandas as pd
 from google import genai
 import os
 
+# Set page configuration
 st.set_page_config(page_title="PDP Session: AI EduFlix Engine", layout="wide")
 st.title("🤖 EduFlix AI Smart Content Generation Engine")
 st.markdown("**Professional Development Program (PDP) Demonstration** | *Class XII CS Domain*")
@@ -15,6 +16,7 @@ def generate_ai_content(topic, difficulty, concept, marks):
     if not api_key:
         return "⚠️ Please enter a valid Gemini API Key in the sidebar to generate AI content."
     try:
+        # Initializing the client
         client = genai.Client(api_key=api_key)
         prompt_template = f"""
         You are an expert Computer Science teacher for CBSE/ISC Class XII (Subject Code 083).
@@ -31,13 +33,15 @@ def generate_ai_content(topic, difficulty, concept, marks):
         
         ### 🎯 Handcrafted Practical Challenge
         """
+        # Using the stable model identifier to prevent 503/404 errors
         response = client.models.generate_content(
-            model='gemini-3.5-flash',
+            model='gemini-1.5-flash',
             contents=prompt_template,
         )
         return response.text
     except Exception as e:
-        return f"❌ Error: {str(e)}"
+        # Return a custom string so the UI can handle the error gracefully
+        return f"ERROR_OCCURRED: {str(e)}"
 
 def fetch_syllabus_row(topic_selected, student_tier):
     csv_file = "cs_syllabus.csv"
@@ -48,10 +52,12 @@ def fetch_syllabus_row(topic_selected, student_tier):
             return match.iloc[0].to_dict()
     return {"core_concept": "General Concepts", "expected_marks": "Variable"}
 
+# Initialize session state for the assessment flow
 if 'score' not in st.session_state: st.session_state.score = 0
 if 'level' not in st.session_state: st.session_state.level = "Beginner"
 if 'quiz_done' not in st.session_state: st.session_state.quiz_done = False
 
+# Sidebar Selection
 selected_topic = st.sidebar.selectbox("Choose Syllabus Domain:", ["Python Functions", "File Handling", "SQL Databases"])
 
 if st.sidebar.button("Reset Student Assessment"):
@@ -95,4 +101,11 @@ with col2:
     if st.button("✨ Generate AI Curriculum Material", type="primary"):
         with st.spinner("AI Teacher is generating custom notes..."):
             ai_output = generate_ai_content(selected_topic, st.session_state.level, metadata['core_concept'], metadata['expected_marks'])
-            st.markdown(ai_output)
+            
+            # Robust UI error handling
+            if "ERROR_OCCURRED" in ai_output:
+                st.error("The AI service is currently busy or experiencing high demand. Please wait a few seconds and try again.")
+                with st.expander("Technical Details"):
+                    st.code(ai_output)
+            else:
+                st.markdown(ai_output)
