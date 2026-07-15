@@ -28,11 +28,11 @@ def generate_ai_content(topic, difficulty, concept, marks):
         Exam Weighting: Approximately {marks} Marks
         
         Please provide your response strictly divided into these three sections using clear Markdown headers:
-        ### 💡 Dynamic Concept Notes
+        ###  Dynamic Concept Notes
         
-        ### 💻 Executable Model Code Template
+        ###  Executable Model Code Template
         
-        ### 🎯 Handcrafted Practical Challenge
+        ###  Handcrafted Practical Challenge
         """
         
         # Calling OpenAI's stable gpt-4o-mini model
