@@ -1,5 +1,5 @@
 topic,difficulty,concept,expected_marks
-Python Functions,Beginner,Function Definition & Positional Arguments,3
+Python Functions,Beginner,Function Definition & Positional Arguments,8
 Python Functions,Intermediate,Scope of Variables (Global vs Local),4
 Python Functions,Advanced,Mutable vs Immutable Default Parameters,5
 File Handling,Beginner,Opening & Reading Text Files (.txt),2
